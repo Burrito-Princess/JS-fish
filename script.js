@@ -2,22 +2,90 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
 let fishProperties = [];
+let foodProperties = [];
+
 let frame = 0;
-let Nfish = 10;
-let foodMultiplier = 0.1;
+let Nfish = 2;
+let foodMultiplier = 1;
 let fish = { x: 0, y: 0, w: 0, h: 0 };
 let food = { x: 0, y: 0, w: 0, h: 0 };
-let ray = { x: 0, y: 0, w: 0, h: 0, a: 0};
+let ray = { x: 0, y: 0, w: 0, h: 0, a: 0 };
 
-let resolutionRay = 10;
+let resolutionRay = 50;
 let rayDistance = 5;
-let rayAngle = 10;
+let rayAngle = 9;
 let numberRays = 9;
 
 let lavia;
 
+let x = 0;
+let neuralNetworks = [
+  {
+    //Inputs
+    inputs: { ray: [], energy: 15, alive: true },
+    inputOperators: {
+      rays: [
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+      ],
+      other: [["*", 5]],
+    },
+    layers: [
+      {
+        operators: ["*", "/", "**"],
+        values: [2, 2, 2],
+      },
+
+      //.....
+    ],
+    outputs: [
+      // moveFish(),
+      // rotateFish()
+    ],
+  },
+{
+    //Inputs
+    inputs: { ray: [], energy: 15, alive: true },
+    inputOperators: {
+      rays: [
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+        ["*", 5],
+      ],
+      other: [["*", 5]],
+    },
+    layers: [
+      {
+        operators: ["*", "/", "**"],
+        values: [2, 2, 2],
+      },
+
+      //.....
+    ],
+    outputs: [
+      // moveFish(),
+      // rotateFish()
+    ],
+  },
+];
+
 createFishProperies(Nfish);
 createFoodProperies(2);
+createNuralProperties();
+
 updateFrame();
 
 function intersects(fish, ray) {
@@ -33,7 +101,9 @@ function updateFrame() {
   frame++;
   removeFish();
   for (let id = 0; id < fishProperties.length; id++) {
-    moveFish(id, 1);
+    // neuralNetworks[id].inputs.ray = [];
+    // neuralNetworks[id].inputs.distance = [];
+    moveFish(id, 10);
     ctx.save();
     ctx.translate(fishProperties[id][0], fishProperties[id][1]);
     ctx.rotate((fishProperties[id][4] * Math.PI) / 180);
@@ -68,8 +138,8 @@ function updateFrame() {
       food.w = foodProperties[h][2];
       food.h = foodProperties[h][3];
       for (let i = 0; i < numberRays; i++) {
-        
-        ray.a = (fish.a * Math.PI) / 180 + rayAngle * i - rayAngle * numberRays / 2;
+        ray.a =
+          (fish.a * Math.PI) / 180 + rayAngle * i - (rayAngle * numberRays) / 2;
         for (let j = 0; j < resolutionRay; j++) {
           ray.x = fish.x + calculateSides(fish.a + ray.a, rayDistance)[0] * j;
           ray.y = fish.y + calculateSides(fish.a + ray.a, rayDistance)[1] * j;
@@ -79,15 +149,20 @@ function updateFrame() {
           ctx.fillStyle = "#0000FF";
           ctx.fillRect(ray.x, ray.y, ray.w, ray.h);
           if (intersects(food, ray)) {
-            console.log("HIT at " + id + " - " + j);
-            break;
-          }
+            console.log("HIT at " + id + " - " + i + " - " + j);
+            if (neuralNetworks[id].inputs.ray[i] == 10000){
+neuralNetworks[id].inputs.ray[i] = j;
+            }
+            
+          } else {
+
+        }
         }
       }
     }
   }
 
-  requestAnimationFrame(updateFrame);
+  // requestAnimationFrame(updateFrame);
 }
 
 function moveFish(id, value) {
@@ -122,6 +197,16 @@ function createFoodProperies(amount) {
   }
 }
 
+function createNuralProperties(){
+  console.log(neuralNetworks.length)
+    for (let j = 0; j < neuralNetworks.length; j++){
+        for (let i = 0; i < numberRays; i++){
+      neuralNetworks[j].inputs.ray.push(10000)
+    }
+  }
+  console.log(neuralNetworks)
+}
+
 // console.log(foodProperties);
 
 function removeFish() {
@@ -139,3 +224,28 @@ function calculateSides(angleDegrees, value) {
   const y = value * Math.sin(angleRadians);
   return [x, y];
 }
+
+function operate(id, layer, x, node) {
+  const currentLayer = neuralNetworks[id].layers[layer];
+  switch (currentLayer.operators[node]) {
+    case "+":
+      return x + currentLayer.values[node];
+    case "-":
+      return x - currentLayer.values[node];
+    case "*":
+      return x * currentLayer.values[node];
+    case "/":
+      return x / currentLayer.values[node];
+    case "**":
+      return x ** currentLayer.values[node];
+    case "sqrt":
+      return Math.sqrt(x);
+    case "inv":
+      return x * -1;
+    case "rand":
+      return Math.random()*x;
+  }
+}
+
+console.log(neuralNetworks[0].inputs.ray);
+console.log(neuralNetworks[1].inputs.ray);
