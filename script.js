@@ -27,12 +27,11 @@ let neuralNetworks = [
       speed: 10,
       size: 10,
       sight:{
-      sightDistance: 50,
-      sightRays: 9,
-      sightAngle: 9,
+        distance: 50,
+        rays: 9,
+        angle: 9,
       },
       
-
       creator: "ross"
     }
   },
